@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: rrb-railway-chatbot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+```
+
+Also update `requirements.txt` to add gunicorn:
+```
+flask
+requests
+gunicorn
