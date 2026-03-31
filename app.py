@@ -1,13 +1,12 @@
 from flask import Flask, render_template, request, jsonify, session
 import os
 import requests
-import json
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "rrb-railway-secret-2025")
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")  # Only from server env
 
 SYSTEM_PROMPT = """You are an expert RRB Railway Exam Assistant for Indian railway recruitment exams including RRB NTPC, Group D, ALP, JE, and other RRB exams.
 Your role:
@@ -28,27 +27,24 @@ def index():
 def chat():
     data = request.json
     user_message = data.get("message", "").strip()
-    api_key = data.get("api_key", GROQ_API_KEY).strip()
 
     if not user_message:
         return jsonify({"error": "Empty message"}), 400
 
-    if not api_key:
-        return jsonify({"error": "No API key provided. Please enter your Groq API key."}), 401
+    if not GROQ_API_KEY:
+        return jsonify({"error": "Server not configured. Contact admin."}), 500
 
-    # Maintain history in session
     if "history" not in session:
         session["history"] = []
 
     session["history"].append({"role": "user", "content": user_message})
-
     messages = [{"role": "system", "content": SYSTEM_PROMPT}] + session["history"]
 
     try:
         response = requests.post(
             GROQ_API_URL,
             headers={
-                "Authorization": f"Bearer {api_key}",
+                "Authorization": f"Bearer {GROQ_API_KEY}",
                 "Content-Type": "application/json"
             },
             json={
@@ -69,7 +65,6 @@ def chat():
         reply = result["choices"][0]["message"]["content"]
         session["history"].append({"role": "assistant", "content": reply})
         session.modified = True
-
         return jsonify({"reply": reply})
 
     except requests.exceptions.Timeout:

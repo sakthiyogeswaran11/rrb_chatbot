@@ -437,12 +437,6 @@ header {
   </div>
 </header>
 
-<div class="api-bar">
-  <span class="api-label">🔑 Groq Key</span>
-  <input type="password" id="api-key" placeholder="gsk_xxxxxxxxxxxxxxxx" />
-  <button class="save-key" onclick="saveKey()">SAVE</button>
-</div>
-
 <div class="topics">
   <span class="chip" onclick="ask('RRB NTPC complete syllabus 2025')">📋 NTPC Syllabus</span>
   <span class="chip" onclick="ask('RRB Group D exam pattern and syllabus')">🚉 Group D</span>
@@ -495,14 +489,6 @@ header {
 </div>
 
 <script>
-  let apiKey = localStorage.getItem('rrb_groq_key') || '';
-  if (apiKey) document.getElementById('api-key').value = apiKey;
-
-  function saveKey() {
-    apiKey = document.getElementById('api-key').value.trim();
-    localStorage.setItem('rrb_groq_key', apiKey);
-    toast('✅ API key saved!', true);
-  }
 
   function toast(msg, ok=false) {
     document.querySelectorAll('.toast').forEach(t=>t.remove());
@@ -597,9 +583,6 @@ header {
     const text = input.value.trim();
     if (!text) return;
 
-    const key = apiKey || document.getElementById('api-key').value.trim();
-    if (!key) { toast('⚠️ Enter your Groq API key first!'); document.getElementById('api-key').focus(); return; }
-
     input.value = ''; input.style.height='auto';
     document.getElementById('send-btn').disabled = true;
 
@@ -610,7 +593,7 @@ header {
       const res = await fetch('/chat', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ message: text, api_key: key })
+        body: JSON.stringify({ message: text })
       });
 
       const data = await res.json();
